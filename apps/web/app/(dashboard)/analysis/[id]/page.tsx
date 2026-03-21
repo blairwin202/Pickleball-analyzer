@@ -13,7 +13,7 @@ const POSITIONS = [
 
 export default function AnalysisPage() {
   const params = useParams();
-  const id = params?.id;
+  const id = params?.id as string | null;
   const { analysis, error } = useAnalysis(id);
   const [selectedPlayer, setSelectedPlayer] = useState(0);
   const [showShare, setShowShare] = useState(false);
