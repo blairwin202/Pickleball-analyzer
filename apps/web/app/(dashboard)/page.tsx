@@ -11,7 +11,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (state.phase === "done") {
-      router.push(`/analysis/${state.analysisId}`);
+      router.push(`/analysis/${"analysisId" in state ? state.analysisId : ""}`);
     }
   }, [state, router]);
 
@@ -47,3 +47,4 @@ export default function HomePage() {
     </div>
   );
 }
+
