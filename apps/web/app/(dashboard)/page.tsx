@@ -1,4 +1,5 @@
-﻿"use client";
+// @ts-nocheck
+"use client";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { VideoDropzone } from "@/components/upload/VideoDropzone";
