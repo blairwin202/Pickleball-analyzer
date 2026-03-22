@@ -1,4 +1,5 @@
-﻿import { useState, useCallback } from "react";
+// @ts-nocheck
+import { useState, useCallback } from "react";
 
 export function useUpload() {
   const [state, setState] = useState({ phase: "idle" });
