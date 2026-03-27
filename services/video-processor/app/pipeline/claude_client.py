@@ -123,7 +123,16 @@ def _encode_image(path):
 def analyze_all_players(frame_paths, cv_metrics):
     zones = cv_metrics.get("court_zones", {})
     pose = cv_metrics.get("pose_metrics", {})
-    image_blocks = [_encode_image(p) for p in frame_paths]
+    print(f'[claude] Encoding {len(frame_paths)} frames', flush=True)
+    import os
+    for p in frame_paths:
+        print(f'[claude] Frame exists: {p} = {os.path.exists(p)}', flush=True)
+    try:
+        image_blocks = [_encode_image(p) for p in frame_paths]
+        print(f'[claude] Successfully encoded {len(image_blocks)} images', flush=True)
+    except Exception as img_err:
+        print(f'[claude] IMAGE ENCODING ERROR: {img_err}', flush=True)
+        return {}
     player_results = {}
 
     for pos in POSITIONS:
@@ -183,7 +192,16 @@ def analyze_all_players(frame_paths, cv_metrics):
 def analyze_frames(frame_paths, cv_metrics):
     zones = cv_metrics.get("court_zones", {})
     pose = cv_metrics.get("pose_metrics", {})
-    image_blocks = [_encode_image(p) for p in frame_paths]
+    print(f'[claude] Encoding {len(frame_paths)} frames', flush=True)
+    import os
+    for p in frame_paths:
+        print(f'[claude] Frame exists: {p} = {os.path.exists(p)}', flush=True)
+    try:
+        image_blocks = [_encode_image(p) for p in frame_paths]
+        print(f'[claude] Successfully encoded {len(image_blocks)} images', flush=True)
+    except Exception as img_err:
+        print(f'[claude] IMAGE ENCODING ERROR: {img_err}', flush=True)
+        return {}
     text_block = {
         "type": "text",
         "text": PROMPT_A.format(
@@ -218,4 +236,5 @@ def analyze_frames(frame_paths, cv_metrics):
     )
     tips = _extract_json(response_b.content[0].text)
     return {"analysis": analysis, "tips": tips.get("tips", [])}
+
 
