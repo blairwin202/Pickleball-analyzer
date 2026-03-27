@@ -10,7 +10,7 @@ import anthropic
 from app.config import settings
 
 _client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
-MODEL = "claude-sonnet-4-6"
+MODEL = "claude-sonnet-4-5-20251001"
 
 POSITIONS = [
     {"id": "near-left",  "label": "Player 1 (Near Left)"},
@@ -170,7 +170,7 @@ def analyze_all_players(frame_paths, cv_metrics):
                 "tips": tips.get("tips", []),
             }
         except Exception as e:
-            print(f"[claude] Error analyzing {pos['label']}: {e}")
+            print(f"[claude] CRITICAL ERROR: {e}", flush=True)
             player_results[pos["id"]] = {
                 "label": pos["label"],
                 "analysis": {"estimated_dupr": 3.0, "confidence": "low", "strengths": [], "weaknesses": []},
@@ -218,3 +218,4 @@ def analyze_frames(frame_paths, cv_metrics):
     )
     tips = _extract_json(response_b.content[0].text)
     return {"analysis": analysis, "tips": tips.get("tips", [])}
+

@@ -23,14 +23,19 @@ def run_pipeline(analysis_id: str, video_storage_path: str, user_id: str):
     video_path = f"{work_dir}/input.mp4"
 
     try:
+        print(f"[pipeline] Starting for {analysis_id}", flush=True)
         _update(analysis_id, {"status": "processing", "processing_started_at": _now()})
+        
+        print(f"[pipeline] Downloading video", flush=True)
         download_video(video_storage_path, video_path)
+        print(f"[pipeline] Video downloaded", flush=True)
 
         duration = get_video_duration(video_path)
         _update(analysis_id, {"video_duration": int(duration)})
 
         frames_dir = f"{work_dir}/frames"
         frame_paths = extract_frames(video_path, frames_dir)
+        print(f"[pipeline] Extracted {len(frame_paths)} frames", flush=True)
 
         if not frame_paths:
             raise ValueError("No frames extracted from video. Check video format.")
@@ -40,16 +45,17 @@ def run_pipeline(analysis_id: str, video_storage_path: str, user_id: str):
         pose_metrics = analyze_pose_batch(frame_paths)
         cv_metrics = compute_cv_metrics(frame_paths, player_detections, pose_metrics, court_zones)
         key_frames = select_key_frames(frame_paths, player_detections, n=4)
+        print(f"[pipeline] CV metrics done, sending {len(key_frames)} frames to Claude", flush=True)
 
-        print(f"[pipeline] Analyzing all 4 players...")
         player_results = analyze_all_players(key_frames, cv_metrics)
+        print(f"[pipeline] Claude analysis done, saving results", flush=True)
 
-        # Use Player 1 (near-left) as the primary/default result
         primary = player_results.get("near-left", {})
         primary_analysis = primary.get("analysis", {})
         primary_tips = primary.get("tips", [])
 
         rating_result = calculate_rating(cv_metrics, primary_analysis)
+        print(f"[pipeline] Rating calculated: {rating_result.get('rating')}", flush=True)
 
         _update(analysis_id, {
             "status": "complete",
@@ -65,6 +71,7 @@ def run_pipeline(analysis_id: str, video_storage_path: str, user_id: str):
             "raw_cv_metrics": cv_metrics,
             "player_results": player_results,
         })
+        print(f"[pipeline] Database updated - COMPLETE!", flush=True)
 
         for tip in primary_tips:
             insert_tip({
@@ -84,7 +91,7 @@ def run_pipeline(analysis_id: str, video_storage_path: str, user_id: str):
 
     except Exception as e:
         tb = traceback.format_exc()
-        print(f"[pipeline] ERROR for {analysis_id}: {tb}")
+        print(f"[pipeline] ERROR for {analysis_id}: {tb}", flush=True)
         _update(analysis_id, {
             "status": "failed",
             "error_message": str(e)[:500],
@@ -104,4 +111,3 @@ def _update(analysis_id: str, data: dict):
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
-
