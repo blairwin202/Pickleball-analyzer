@@ -17,8 +17,7 @@ export async function GET(
     .from("analyses")
     .select(`
       id, status, error_message, rating, rating_confidence,
-      component_scores, shot_analysis, footwork_analysis,
-      positioning_analysis, strengths, weaknesses, created_at,
+      component_scores, shot_analysis, footwork_analysis, positioning_analysis, strengths, weaknesses, player_results, created_at,
       tips (id, title, category, priority, tip_text, drill_text)
     `)
     .eq("id", id)
