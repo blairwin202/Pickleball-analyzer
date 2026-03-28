@@ -11,7 +11,7 @@ from app.config import settings
 
 _client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
 import os
-MODEL = os.environ.get("CLAUDE_MODEL", "claude-haiku-4-5")
+MODEL = os.environ.get("CLAUDE_MODEL", "claude-haiku-4-5-20251001")
 
 POSITIONS = [
     {"id": "near-left",  "label": "Player 1 (Near Left)"},
@@ -237,6 +237,7 @@ def analyze_frames(frame_paths, cv_metrics):
     )
     tips = _extract_json(response_b.content[0].text)
     return {"analysis": analysis, "tips": tips.get("tips", [])}
+
 
 
 
