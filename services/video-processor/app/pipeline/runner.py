@@ -44,7 +44,7 @@ def run_pipeline(analysis_id: str, video_storage_path: str, user_id: str):
         court_zones = estimate_court_zones(player_detections)
         pose_metrics = analyze_pose_batch(frame_paths)
         cv_metrics = compute_cv_metrics(frame_paths, player_detections, pose_metrics, court_zones)
-        key_frames = select_key_frames(frame_paths, player_detections, n=4)
+        key_frames = select_key_frames(frame_paths, player_detections, n=8)
         print(f"[pipeline] CV metrics done, sending {len(key_frames)} frames to Claude", flush=True)
 
         player_results = analyze_all_players(key_frames, cv_metrics)
@@ -111,3 +111,4 @@ def _update(analysis_id: str, data: dict):
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
+

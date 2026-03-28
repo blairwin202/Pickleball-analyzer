@@ -1,5 +1,5 @@
-"""
-Rating algorithm: blend CV metrics (40%) + Claude scores (60%) into DUPR 1.0–6.0.
+﻿"""
+Rating algorithm: blend CV metrics (40%) + Claude scores (60%) into DUPR 1.0â€“6.0.
 """
 
 
@@ -30,12 +30,12 @@ def calculate_rating(cv_metrics: dict, claude_analysis: dict) -> dict:
     # --- Blend: 60% Claude, 40% CV ---
     blended = claude_composite * 0.60 + cv_composite * 0.40
 
-    # --- Map 0-1 → DUPR 1.0-6.0 (slight exponential curve) ---
+    # --- Map 0-1 â†’ DUPR 1.0-6.0 (slight exponential curve) ---
     raw_dupr = 1.0 + (blended ** 0.85) * 5.0
 
     # --- Anchor to Claude's direct DUPR estimate (don't drift > 0.5) ---
     claude_dupr = float(claude_analysis.get("estimated_dupr", 3.0))
-    final_dupr = max(claude_dupr - 0.5, min(claude_dupr + 0.5, raw_dupr))
+    final_dupr = max(claude_dupr - 1.0, min(claude_dupr + 1.0, raw_dupr))
 
     # Round to nearest 0.25
     final_dupr = round(final_dupr * 4) / 4
@@ -54,3 +54,4 @@ def calculate_rating(cv_metrics: dict, claude_analysis: dict) -> dict:
         "confidence": claude_analysis.get("confidence", "medium"),
         "component_scores": component_scores,
     }
+
