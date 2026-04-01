@@ -64,7 +64,7 @@ export default function AnalysisPage() {
   const playerData = analysis.player_results?.[pos.id];
   const playerAnalysis = playerData?.analysis;
   const playerTips = playerData?.tips ?? [];
-  const rating = playerAnalysis?.estimated_dupr;
+  const rating = playerData?.blended_rating ?? playerAnalysis?.estimated_dupr;
   const confidence = playerAnalysis?.confidence ?? "medium";
   const strengths = playerAnalysis?.strengths ?? [];
   const weaknesses = playerAnalysis?.weaknesses ?? [];

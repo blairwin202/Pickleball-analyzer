@@ -1,4 +1,4 @@
-﻿"""
+"""
 Main pipeline orchestrator - analyzes all 4 court positions.
 """
 import os
