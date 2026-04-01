@@ -1,17 +1,12 @@
 import { NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
-
 export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
   const { analysisId, videoPath } = await request.json();
-
-  // Verify the analysis belongs to this user
   const serviceClient = await createServiceClient();
   const { data: analysis } = await serviceClient
     .from("analyses")
@@ -19,20 +14,21 @@ export async function POST(request: Request) {
     .eq("id", analysisId)
     .eq("user_id", user.id)
     .single();
-
   if (!analysis) {
     return NextResponse.json({ error: "Analysis not found" }, { status: 404 });
   }
-
-  // Mark as processing
   await serviceClient
     .from("analyses")
     .update({ status: "processing", processing_started_at: new Date().toISOString() })
     .eq("id", analysisId);
-
-  // Fire and forget — call FastAPI processor
   const processorUrl = process.env.VIDEO_PROCESSOR_URL ?? "http://localhost:8000";
-
+  // Warm up Render first
+  try {
+    await fetch(processorUrl, { method: "GET", signal: AbortSignal.timeout(8000) });
+  } catch (e) {
+    // Ignore - just waking up
+  }
+  // Now fire the process request
   fetch(`${processorUrl}/process`, {
     method: "POST",
     headers: {
@@ -45,9 +41,7 @@ export async function POST(request: Request) {
       user_id: user.id,
     }),
   }).catch(() => {
-    // Log but don't fail — status is tracked via DB polling
-    console.error(`Failed to reach video processor for analysis ${analysisId}`);
+    console.error("Failed to reach video processor for analysis " + analysisId);
   });
-
   return NextResponse.json({ analysisId, status: "processing" });
 }
