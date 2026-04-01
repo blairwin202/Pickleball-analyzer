@@ -1,15 +1,14 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 "use client";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useAnalysis } from "@/hooks/useAnalysis";
-import { ShareCard } from "@/components/analysis/ShareCard";
 
 const POSITIONS = [
-  { id: "near-left",  label: "Player 1", sub: "Near Left",  emoji: "green" },
-  { id: "near-right", label: "Player 2", sub: "Near Right", emoji: "blue" },
-  { id: "far-left",   label: "Player 3", sub: "Far Left",   emoji: "yellow" },
-  { id: "far-right",  label: "Player 4", sub: "Far Right",  emoji: "red" },
+  { id: "near-left",  label: "Player 1", sub: "Near Left" },
+  { id: "near-right", label: "Player 2", sub: "Near Right" },
+  { id: "far-left",   label: "Player 3", sub: "Far Left" },
+  { id: "far-right",  label: "Player 4", sub: "Far Right" },
 ];
 
 export default function AnalysisPage() {
@@ -17,10 +16,10 @@ export default function AnalysisPage() {
   const id = params?.id as string | null;
   const { analysis, error } = useAnalysis(id);
   const [selectedPlayer, setSelectedPlayer] = useState(0);
-  const [showShare, setShowShare] = useState(false);
   const [playerNames, setPlayerNames] = useState({ "near-left": "", "near-right": "", "far-left": "", "far-right": "" });
   const [editingName, setEditingName] = useState(null);
   const [tempName, setTempName] = useState("");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -31,12 +30,18 @@ export default function AnalysisPage() {
     }
   }, [id]);
 
-  const saveName = (posId: string) => {
+  const saveName = (posId) => {
     const updated = { ...playerNames, [posId]: tempName };
     setPlayerNames(updated);
     try { localStorage.setItem("playerNames-" + id, JSON.stringify(updated)); } catch(e) {}
     setEditingName(null);
     setTempName("");
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(`https://pickleballvideoiq.netlify.app/share/${id}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   if (error) return <div className="text-center text-red-500 py-12">{error}</div>;
@@ -64,30 +69,24 @@ export default function AnalysisPage() {
   const playerData = analysis.player_results?.[pos.id];
   const playerAnalysis = playerData?.analysis;
   const playerTips = playerData?.tips ?? [];
-  const rating = playerData?.blended_rating ?? playerAnalysis?.estimated_dupr;
-  const confidence = playerAnalysis?.confidence ?? "medium";
   const strengths = playerAnalysis?.strengths ?? [];
   const weaknesses = playerAnalysis?.weaknesses ?? [];
   const currentName = playerNames[pos.id];
   const displayName = currentName || pos.label;
 
-  function ratingColor(r) {
-    if (!r) return "text-gray-500";
-    if (r < 2.5) return "text-gray-500";
-    if (r < 3.5) return "text-blue-500";
-    if (r < 4.5) return "text-green-600";
-    if (r < 5.5) return "text-orange-500";
-    return "text-red-500";
+  function skillLevel(analysis) {
+    if (!analysis) return null;
+    const shot = analysis.shot_quality?.overall ?? 5;
+    const foot = analysis.footwork?.score ?? 5;
+    const pos = analysis.positioning?.score ?? 5;
+    const avg = (shot + foot + pos) / 3;
+    if (avg >= 8) return { label: "Advanced", color: "text-orange-500", bg: "bg-orange-50" };
+    if (avg >= 6) return { label: "Intermediate", color: "text-green-600", bg: "bg-green-50" };
+    if (avg >= 4) return { label: "Recreational", color: "text-blue-500", bg: "bg-blue-50" };
+    return { label: "Beginner", color: "text-gray-500", bg: "bg-gray-50" };
   }
 
-  function ratingLabel(r) {
-    if (!r) return "Unknown";
-    if (r < 2.5) return "Beginner";
-    if (r < 3.5) return "Recreational";
-    if (r < 4.5) return "Intermediate";
-    if (r < 5.5) return "Advanced";
-    return "Pro";
-  }
+  const skill = skillLevel(playerAnalysis);
 
   return (
     <div className="space-y-6 pb-12">
@@ -114,9 +113,9 @@ export default function AnalysisPage() {
           const name = playerNames[p.id];
           return (
             <button key={idx} onClick={() => setSelectedPlayer(idx)} style={{ top, left, transform: "translate(-50%,-50%)", position: "absolute" }} className="flex flex-col items-center gap-0.5">
-                <div className={"w-10 h-10 rounded-full border-2 flex items-center justify-center text-base font-bold shadow transition-all " + (selectedPlayer === idx ? "bg-yellow-400 border-yellow-600 scale-125" : "bg-white border-gray-300 text-gray-700 hover:scale-110")}>
-                  {selectedPlayer === idx ? "★" : (idx + 1)}
-                </div>
+              <div className={"w-10 h-10 rounded-full border-2 flex items-center justify-center text-base font-bold shadow transition-all " + (selectedPlayer === idx ? "bg-yellow-400 border-yellow-600 scale-125" : "bg-white border-gray-300 text-gray-700 hover:scale-110")}>
+                {selectedPlayer === idx ? "★" : (idx + 1)}
+              </div>
               <span className="text-xs text-white font-medium bg-black/40 rounded px-1">{name || "P" + (idx+1)}</span>
             </button>
           );
@@ -139,21 +138,14 @@ export default function AnalysisPage() {
               </button>
             )}
           </div>
-          <div className="flex gap-2">
-            <button onClick={() => { navigator.clipboard.writeText(`https://pickleballvideoiq.netlify.app/share/${id}`); alert("Link copied! Share it with your playing partners."); }} className="flex items-center gap-2 rounded-xl border border-green-600 px-4 py-2 text-sm font-semibold text-green-600 hover:bg-green-50">
-              Copy Link
-            </button>
-            <button onClick={() => setShowShare(true)} className="flex items-center gap-2 rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700">
-              Share
-            </button>
-          </div>
+          <button onClick={handleCopyLink} className={"flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all " + (copied ? "bg-green-100 text-green-700" : "bg-green-600 text-white hover:bg-green-700")}>
+            {copied ? "Link Copied!" : "Share Results"}
+          </button>
         </div>
 
-        {rating && (
-          <div className="flex flex-col items-center mb-6">
-            <div className={"text-6xl font-bold tabular-nums " + ratingColor(rating)}>{rating.toFixed(2)}</div>
-            <div className={"text-lg font-semibold mt-1 " + ratingColor(rating)}>{ratingLabel(rating)}</div>
-            <div className="text-xs text-gray-400 mt-0.5">Confidence: {confidence}</div>
+        {skill && (
+          <div className={"inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold mb-4 " + skill.bg + " " + skill.color}>
+            {skill.label} Level
           </div>
         )}
 
@@ -194,10 +186,6 @@ export default function AnalysisPage() {
 
         {!playerData && <p className="text-center text-gray-400 text-sm py-8">No data available for this player position</p>}
       </div>
-
-      {showShare && (
-        <ShareCard playerLabel={displayName} position={pos.sub} rating={rating ?? 3.0} confidence={confidence} strengths={strengths} weaknesses={weaknesses} onClose={() => setShowShare(false)} />
-      )}
     </div>
   );
 }
