@@ -135,7 +135,7 @@ export default function AnalysisPage() {
             ) : (
               <button onClick={() => { setEditingName(pos.id); setTempName(currentName); }} className="text-left">
                 <h2 className="text-xl font-bold text-gray-900 hover:text-green-600">{displayName}</h2>
-                <p className="text-sm text-gray-500">{pos.sub} position Ã¢â‚¬â€ tap name to edit</p>
+                <p className="text-sm text-gray-500">{pos.sub} position - tap name to edit</p>
               </button>
             )}
           </div>
