@@ -22,13 +22,7 @@ export async function POST(request: Request) {
     .update({ status: "processing", processing_started_at: new Date().toISOString() })
     .eq("id", analysisId);
   const processorUrl = process.env.VIDEO_PROCESSOR_URL ?? "http://localhost:8000";
-  // Warm up Render first
-  try {
-    await fetch(processorUrl, { method: "GET", signal: AbortSignal.timeout(8000) });
-  } catch (e) {
-    // Ignore - just waking up
-  }
-  // Now fire the process request
+  // Fire the process request
   fetch(`${processorUrl}/process`, {
     method: "POST",
     headers: {
