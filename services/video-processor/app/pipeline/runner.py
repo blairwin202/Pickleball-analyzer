@@ -48,7 +48,13 @@ def run_pipeline(analysis_id: str, video_storage_path: str, user_id: str):
         print(f"[pipeline] CV metrics done, sending {len(key_frames)} frames to Claude", flush=True)
 
         player_results = analyze_all_players(key_frames, cv_metrics)
-        print(f"[pipeline] Claude analysis done, saving results", flush=True)
+        print(f"[pipeline] Claude analysis done, calculating per-player ratings", flush=True)
+        for pos_id, pos_data in player_results.items():
+            pos_analysis = pos_data.get("analysis", {})
+            pos_rating = calculate_rating(cv_metrics, pos_analysis)
+            player_results[pos_id]["blended_rating"] = pos_rating["rating"]
+            player_results[pos_id]["blended_confidence"] = pos_rating["confidence"]
+        print(f"[pipeline] Per-player ratings calculated, saving results", flush=True)
 
         primary = player_results.get("near-left", {})
         primary_analysis = primary.get("analysis", {})
