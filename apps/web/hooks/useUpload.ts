@@ -5,13 +5,6 @@ export function useUpload() {
   const upload = useCallback(async (file, playerPosition) => {
     setState({ phase: "uploading", progress: 0 });
     try {
-      // Warm up Render before uploading
-      try {
-        await fetch("https://pickleball-analyzer.onrender.com/health", { method: "GET", signal: AbortSignal.timeout(30000) });
-      } catch (e) {
-        // Ignore warm-up errors, just continue
-      }
-
       const res = await fetch("/api/videos/upload-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -43,28 +36,19 @@ export function useUpload() {
         xhr.send(file);
       });
       setState({ phase: "processing", analysisId });
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 90000);
-      try {
-        const processRes = await fetch("/api/videos/process", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ analysisId, videoPath, playerPosition }),
-          signal: controller.signal,
-        });
-        clearTimeout(timeout);
-        if (!processRes.ok) {
-          throw new Error("Failed to start processing");
-        }
-      } catch (err) {
-        clearTimeout(timeout);
-        if (err.name === "AbortError") {
-          // Timeout is OK - Render accepted the job, just took long to respond
+      fetch("/api/videos/process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ analysisId, videoPath, playerPosition }),
+      }).then(res => {
+        if (res.ok) {
           setState({ phase: "done", analysisId });
-          return;
+        } else {
+          setState({ phase: "done", analysisId });
         }
-        throw err;
-      }
+      }).catch(() => {
+        setState({ phase: "done", analysisId });
+      });
       setState({ phase: "done", analysisId });
     } catch (err) {
       setState({
