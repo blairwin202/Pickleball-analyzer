@@ -20,7 +20,9 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!contentType.startsWith("video/")) {
+  const allowedTypes = ["video/", "image/jpeg", "image/png", "application/octet-stream"];
+  const isAllowed = allowedTypes.some(t => contentType.startsWith(t)) || !contentType;
+  if (!isAllowed) {
     return NextResponse.json({ error: "Only video files are allowed." }, { status: 400 });
   }
 
