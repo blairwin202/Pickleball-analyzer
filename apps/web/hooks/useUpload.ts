@@ -36,19 +36,18 @@ export function useUpload() {
         xhr.send(file);
       });
       setState({ phase: "processing", analysisId });
-      fetch("/api/videos/process", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ analysisId, videoPath, playerPosition }),
-      }).then(res => {
-        if (res.ok) {
-          setState({ phase: "done", analysisId });
-        } else {
-          setState({ phase: "done", analysisId });
+      try {
+        const processRes = await fetch("/api/videos/process", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ analysisId, videoPath, playerPosition }),
+        });
+        if (!processRes.ok) {
+          console.error("Process request failed");
         }
-      }).catch(() => {
-        setState({ phase: "done", analysisId });
-      });
+      } catch (e) {
+        console.error("Process fetch error:", e);
+      }
       setState({ phase: "done", analysisId });
     } catch (err) {
       setState({
