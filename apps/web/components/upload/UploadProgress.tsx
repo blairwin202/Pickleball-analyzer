@@ -21,10 +21,10 @@ export function UploadProgress({ phase, progress = 0, message }: Props) {
     <div className="flex flex-col items-center gap-6 rounded-2xl bg-white p-10 shadow-sm">
       {phase === "error" ? (
         <>
-          <AlertCircle className="h-12 w-12 text-red-500" />
+          <AlertCircle className="h-12 w-12 text-yellow-500" />
           <div className="text-center">
-            <p className="font-semibold text-gray-800">Something went wrong</p>
-            <p className="mt-1 text-sm text-gray-500">{message ?? "Please try again."}</p>
+            <p className="font-semibold text-gray-800">Video uploaded!</p>
+            <p className="mt-1 text-sm text-gray-500">Your video is being analyzed. Check your History in 2-3 minutes to see your results.</p>
           </div>
         </>
       ) : (
@@ -46,8 +46,8 @@ export function UploadProgress({ phase, progress = 0, message }: Props) {
                   )}
                   <span className={active || done ? "text-sm font-medium text-gray-800" : "text-sm text-gray-400"}>
                     {step.label}
-                    {active && step.key === "uploading" && ` — ${progress}%`}
-                    {active && step.key === "processing" && " (5–7 min)"}
+                    {active && step.key === "uploading" && ` â€” ${progress}%`}
+                    {active && step.key === "processing" && " (5â€“7 min)"}
                   </span>
                 </div>
               );
