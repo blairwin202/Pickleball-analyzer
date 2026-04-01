@@ -16,10 +16,10 @@ export default async function SharePage({ params }) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-2xl mb-2">🎾</p>
+          <p className="text-2xl mb-2">ðŸŽ¾</p>
           <p className="text-gray-600">Analysis not found or still processing.</p>
           <Link href="/" className="mt-4 inline-block text-green-600 font-medium hover:underline">
-            Analyze your own game ->
+            Analyze your own game
           </Link>
         </div>
       </div>
@@ -51,7 +51,7 @@ export default async function SharePage({ params }) {
       <header className="bg-white border-b">
         <div className="mx-auto max-w-2xl px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">🎾</span>
+            <span className="text-2xl">ðŸŽ¾</span>
             <span className="text-xl font-bold text-green-700">PickleballVideoIQ</span>
           </div>
           <Link href="/" className="text-sm bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700">
@@ -111,7 +111,7 @@ export default async function SharePage({ params }) {
                   <p className="text-xs font-semibold text-gray-600 mb-1">Pro Tips and Drills</p>
                   <p className="text-xs text-gray-400">Sign up free to unlock {tips.length} personalized drills</p>
                   <Link href="/" className="mt-2 inline-block text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-green-700">
-                    Unlock Free ->
+                    Unlock Free
                   </Link>
                 </div>
               </div>
@@ -123,11 +123,11 @@ export default async function SharePage({ params }) {
           <p className="text-lg font-bold mb-1">Want YOUR game analyzed?</p>
           <p className="text-sm opacity-80 mb-4">Upload a 30-second video and get AI-powered strengths, weaknesses and personalized drills.</p>
           <Link href="/" className="inline-block bg-white text-green-700 font-bold px-6 py-3 rounded-xl hover:bg-gray-50">
-            Analyze My Game Free ->
+            Analyze My Game Free
           </Link>
         </div>
 
-        <p className="text-center text-xs text-gray-400">Analyzed by PickleballVideoIQ 🎾</p>
+        <p className="text-center text-xs text-gray-400">Analyzed by PickleballVideoIQ ðŸŽ¾</p>
       </main>
     </div>
   );
