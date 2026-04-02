@@ -1,4 +1,4 @@
-﻿"""
+"""
 Claude Vision integration - analyzes all 4 court positions separately.
 """
 import base64
@@ -21,9 +21,11 @@ POSITIONS = [
 ]
 
 SYSTEM_A = """You are an expert pickleball coach and DUPR-certified analyst with 10+ years of experience.
-Analyze player footage objectively. Focus on technique, not match outcome.
-DUPR scale: 2.0=beginner, 2.5=novice, 3.0=recreational, 3.5=solid intermediate,
-4.0=advanced, 4.5=strong advanced, 5.0=elite amateur, 5.5+=professional.
+Analyze player footage objectively using the official USA Pickleball and DUPR skill band framework.
+Assess players against observable behavioral criteria for each band - not by estimating a number.
+Skill bands: 3.0-3.3=Developing Intermediate, 3.3-3.5=Solid Intermediate, 3.5-3.7=Advanced Intermediate,
+3.7-3.9=Strong Intermediate, 3.9-4.1=Emerging Advanced, 4.1-4.3=Developing Advanced,
+4.3-4.5=Solid Advanced, 4.5-4.7=Strong Advanced, 4.7-5.0=Elite Amateur/Pro.
 Always respond with ONLY valid JSON - no markdown, no explanation outside the JSON."""
 
 PROMPT_A = """Analyze these {n} frames from a pickleball match focusing specifically on {position}.
@@ -36,11 +38,27 @@ Computer vision pre-analysis:
 
 Focus your analysis on the player in the {position} position.
 
+Use the skill band rubric below to assess which band this player belongs in based on OBSERVABLE behaviors visible in the frames.
+
+SKILL BAND RUBRIC:
+3.0-3.3 (Developing Intermediate): Basic court positioning sometimes correct; gets to kitchen line inconsistently; dink rallies 3-4 shots; serves and returns in play but lack depth; no third shot drop attempt.
+3.3-3.5 (Solid Intermediate): Consistently moves to kitchen after return; sustains dink rallies 5-8 shots; beginning to distinguish hard vs soft game; serves with some direction and depth; occasionally attempts third shot drop.
+3.5-3.7 (Advanced Intermediate): Reliably at kitchen line; uses soft game intentionally; third shot drop attempted regularly; reads opponent positioning; some stacking awareness.
+3.7-3.9 (Strong Intermediate): Consistent third shot drop; controls dink placement cross-court vs down-the-line; good split-step and ready position; beginning to attack with purpose; resets hard balls into kitchen.
+3.9-4.1 (Emerging Advanced): Identifies and attacks opponent weaknesses; moves as a team with partner; consistent kitchen play under pressure; executes speed-ups and resets; rarely makes unforced errors.
+4.1-4.3 (Developing Advanced): Superior shot placement; anticipates play before it happens; consistent across all shot types; strong transition game; good use of power vs patience.
+4.3-4.5 (Solid Advanced): Executes ATP and ERNE attempts; uses deception and surprise shots; dominates at kitchen line; exceptional hand speed; controls tempo of play.
+4.5-4.7 (Strong Advanced): Near-zero unforced errors; all shots executed under pressure; varies strategy mid-match; strong mental game; tournament-level consistency.
+4.7-5.0 (Elite Amateur/Pro): Dominant at every court position; elite speed, agility and anticipation; teaching-level court IQ; competitive at regional/national level.
+
 Respond with ONLY this JSON schema:
 {{
-  "estimated_dupr": <float 1.0-6.0>,
+  "skill_band": <string, e.g. "3.5-3.7">,
+  "skill_band_label": <string, e.g. "Advanced Intermediate">,
   "confidence": <"low"|"medium"|"high">,
   "confidence_reason": <string, max 60 words>,
+  "band_skills_demonstrated": [<string>, <string>, <string>],
+  "band_skills_missing": [<string>, <string>, <string>],
   "shot_quality": {{
     "overall": <1-10>,
     "serve": <1-10 or null>,
