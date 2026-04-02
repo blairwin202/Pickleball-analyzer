@@ -1,38 +1,37 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-
-export function LoginForm() {
+export function LoginForm({ redirect = "/" }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState<"login" | "signup">("login");
-
-  const submit = async (e: React.FormEvent) => {
+  const [mode, setMode] = useState("login");
+  const submit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
     const supabase = createClient();
-
     if (mode === "signup") {
       const { error: signUpError } = await supabase.auth.signUp({ email, password });
       if (signUpError) { setError(signUpError.message); setLoading(false); return; }
-      setError("Check your email to confirm your account.");
-      setLoading(false);
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) {
+        setError("Account created! Please check your email to confirm, then sign in.");
+        setLoading(false);
+        return;
+      }
+      router.push(redirect);
+      router.refresh();
       return;
     }
-
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     if (signInError) { setError(signInError.message); setLoading(false); return; }
-    router.push("/");
+    router.push(redirect);
     router.refresh();
   };
-
   return (
     <div className="rounded-2xl bg-white p-8 shadow-sm border border-gray-100">
       <form onSubmit={submit} className="space-y-4">
@@ -73,7 +72,7 @@ export function LoginForm() {
           onClick={() => setMode(mode === "login" ? "signup" : "login")}
           className="font-medium text-green-600 hover:underline"
         >
-          {mode === "login" ? "Sign up" : "Sign in"}
+          {mode === "login" ? "Sign up free" : "Sign in"}
         </button>
       </p>
     </div>
