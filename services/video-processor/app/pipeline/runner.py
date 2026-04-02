@@ -74,6 +74,10 @@ def run_pipeline(analysis_id: str, video_storage_path: str, user_id: str):
             "positioning_analysis": primary_analysis.get("positioning"),
             "strengths": primary_analysis.get("strengths", []),
             "weaknesses": primary_analysis.get("weaknesses", []),
+            "skill_band": primary_analysis.get("skill_band"),
+            "skill_band_label": primary_analysis.get("skill_band_label"),
+            "band_skills_demonstrated": primary_analysis.get("band_skills_demonstrated", []),
+            "band_skills_missing": primary_analysis.get("band_skills_missing", []),
             "raw_cv_metrics": cv_metrics,
             "player_results": player_results,
         })
