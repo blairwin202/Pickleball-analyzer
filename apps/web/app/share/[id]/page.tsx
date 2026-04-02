@@ -1,9 +1,10 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 
-export default async function SharePage({ params }) {
+export default async function SharePage({ params, searchParams }) {
   const { id } = await params;
+  const sp = await searchParams;
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -31,11 +32,19 @@ export default async function SharePage({ params }) {
 
   const playerResults = analysis.player_results || {};
   const positions = [
-    { id: 'near-left',  label: 'Player 1', sub: 'Near Left' },
-    { id: 'near-right', label: 'Player 2', sub: 'Near Right' },
-    { id: 'far-left',   label: 'Player 3', sub: 'Far Left' },
-    { id: 'far-right',  label: 'Player 4', sub: 'Far Right' },
+    { id: 'near-left',  label: 'Player 1', sub: 'Near Left',  nameKey: 'near-left' },
+    { id: 'near-right', label: 'Player 2', sub: 'Near Right', nameKey: 'near-right' },
+    { id: 'far-left',   label: 'Player 3', sub: 'Far Left',   nameKey: 'far-left' },
+    { id: 'far-right',  label: 'Player 4', sub: 'Far Right',  nameKey: 'far-right' },
   ];
+
+  // Read names from URL search params
+  const playerNames = {
+    'near-left':  sp?.['near-left']  ? decodeURIComponent(sp['near-left'])  : null,
+    'near-right': sp?.['near-right'] ? decodeURIComponent(sp['near-right']) : null,
+    'far-left':   sp?.['far-left']   ? decodeURIComponent(sp['far-left'])   : null,
+    'far-right':  sp?.['far-right']  ? decodeURIComponent(sp['far-right'])  : null,
+  };
 
   function skillLevel(playerAnalysis) {
     if (!playerAnalysis) return null;
@@ -53,9 +62,7 @@ export default async function SharePage({ params }) {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b">
         <div className="mx-auto max-w-2xl px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-bold text-green-700">PickleballVideoIQ</span>
-          </div>
+          <span className="text-xl font-bold text-green-700">PickleballVideoIQ</span>
           {isLoggedIn ? (
             <Link href="/" className="text-sm bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700">
               Analyze My Game
@@ -82,14 +89,18 @@ export default async function SharePage({ params }) {
             const weaknesses = playerAnalysis?.weaknesses || [];
             const tips = data?.tips || [];
             const skill = skillLevel(playerAnalysis);
+            const customName = playerNames[pos.nameKey];
+            const displayName = customName || pos.label;
+            const skillBand = playerAnalysis?.skill_band;
 
             if (!data) return null;
 
             return (
               <div key={pos.id} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
                 <div className="mb-3">
-                  <p className="text-sm font-bold text-gray-800">{pos.label}</p>
+                  <p className="text-sm font-bold text-gray-800">{displayName}</p>
                   <p className="text-xs text-gray-500">{pos.sub}</p>
+                  {skillBand && <p className="text-xs font-semibold text-green-700 mt-0.5">Rating band: {skillBand}</p>}
                   {skill && (
                     <span className="inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full" style={{ color: skill.color, background: skill.bg }}>
                       {skill.label}
