@@ -184,7 +184,7 @@ def analyze_all_players(frame_paths, cv_metrics):
                 max_tokens=900,
                 messages=[{"role": "user", "content": PROMPT_B.format(
                     position=pos["label"],
-                    dupr=analysis["estimated_dupr"],
+                    dupr=analysis.get("skill_band", "3.5-3.7"),
                     weaknesses="; ".join(analysis.get("weaknesses", [])),
                     footwork_obs=analysis.get("footwork", {}).get("observations", ""),
                     positioning_obs=analysis.get("positioning", {}).get("observations", ""),
@@ -201,7 +201,7 @@ def analyze_all_players(frame_paths, cv_metrics):
             print(f"[claude] CRITICAL ERROR: {e}", flush=True)
             player_results[pos["id"]] = {
                 "label": pos["label"],
-                "analysis": {"estimated_dupr": 3.0, "confidence": "low", "strengths": [], "weaknesses": []},
+                "analysis": {"skill_band": "3.0-3.3", "skill_band_label": "Developing Intermediate", "confidence": "low", "strengths": [], "weaknesses": []},
                 "tips": [],
             }
 
@@ -246,7 +246,7 @@ def analyze_frames(frame_paths, cv_metrics):
         max_tokens=900,
         messages=[{"role": "user", "content": PROMPT_B.format(
             position="player",
-            dupr=analysis["estimated_dupr"],
+            dupr=analysis.get("skill_band", "3.5-3.7"),
             weaknesses="; ".join(analysis.get("weaknesses", [])),
             footwork_obs=analysis.get("footwork", {}).get("observations", ""),
             positioning_obs=analysis.get("positioning", {}).get("observations", ""),
