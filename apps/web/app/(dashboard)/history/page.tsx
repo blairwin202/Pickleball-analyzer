@@ -56,7 +56,7 @@ export default function HistoryPage() {
         {loading && <p className="text-sm text-gray-500">Loading...</p>}
         {!loading && analyses.length === 0 && (
           <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
-            <p className="text-3xl mb-2">Ã°Å¸Å½Â¾</p>
+                  {deleting === a.id ? "..." : "Delete"}
             <p className="text-gray-600 font-medium">No analyses yet</p>
             <p className="text-sm text-gray-400 mt-1">Upload a video to get started</p>
             <Link href="/" className="mt-4 inline-block text-sm bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
@@ -114,7 +114,7 @@ export default function HistoryPage() {
                 disabled={deleting === a.id}
                 className="rounded-xl border border-red-200 bg-red-50 px-3 py-4 text-red-500 hover:bg-red-100 transition-colors disabled:opacity-50"
               >
-                {deleting === a.id ? "..." : "Ã°Å¸â€”â€˜Ã¯Â¸Â"}
+                  {deleting === a.id ? "..." : "Delete"}
               </button>
             </div>
           );
