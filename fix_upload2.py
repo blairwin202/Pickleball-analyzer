@@ -1,4 +1,5 @@
-"use client";
+﻿path = r"C:\Users\blair\Documents\pickleball-analyzer\apps\web\components\upload\UploadProgress.tsx"
+content = '''"use client";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 interface Props {
   phase: "uploading" | "processing" | "done" | "error";
@@ -40,8 +41,8 @@ export function UploadProgress({ phase, progress = 0, message }: Props) {
                   )}
                   <span className={active || done ? "text-sm font-medium text-gray-800" : "text-sm text-gray-400"}>
                     {step.label}
-                    {active && step.key === "uploading" &&  — %}
-                    {active && step.key === "processing" && " (5–7 min)"}
+                    {active && step.key === "uploading" &&  \u2014 %}
+                    {active && step.key === "processing" && " (5\u20137 min)"}
                   </span>
                 </div>
               );
@@ -52,3 +53,7 @@ export function UploadProgress({ phase, progress = 0, message }: Props) {
     </div>
   );
 }
+'''
+with open(path, "w", encoding="utf-8") as f:
+    f.write(content)
+print("Done!")
