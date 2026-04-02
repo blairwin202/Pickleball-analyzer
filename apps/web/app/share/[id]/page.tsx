@@ -1,30 +1,27 @@
-﻿// @ts-nocheck
-import { createClient } from '@/lib/supabase/server';
-import Link from 'next/link';
+// @ts-nocheck
+import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 
 export default async function SharePage({ params, searchParams }) {
   const { id } = await params;
   const sp = await searchParams;
   const supabase = await createClient();
-
   const { data: { user } } = await supabase.auth.getUser();
   const isLoggedIn = !!user;
 
   const { data: analysis } = await supabase
-    .from('analyses')
-    .select('id, status, player_results, created_at')
-    .eq('id', id)
+    .from("analyses")
+    .select("id, status, player_results, created_at")
+    .eq("id", id)
     .single();
 
-  if (!analysis || analysis.status !== 'complete') {
+  if (!analysis || analysis.status !== "complete") {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-2xl mb-2">🎾</p>
           <p className="text-gray-600">Analysis not found or still processing.</p>
-          <Link href="/" className="mt-4 inline-block text-green-600 font-medium hover:underline">
-            Analyze your own game
-          </Link>
+          <Link href="/" className="mt-4 inline-block text-green-600 font-medium hover:underline">Analyze your own game</Link>
         </div>
       </div>
     );
@@ -32,30 +29,26 @@ export default async function SharePage({ params, searchParams }) {
 
   const playerResults = analysis.player_results || {};
   const positions = [
-    { id: 'near-left',  label: 'Player 1', sub: 'Near Left',  nameKey: 'near-left' },
-    { id: 'near-right', label: 'Player 2', sub: 'Near Right', nameKey: 'near-right' },
-    { id: 'far-left',   label: 'Player 3', sub: 'Far Left',   nameKey: 'far-left' },
-    { id: 'far-right',  label: 'Player 4', sub: 'Far Right',  nameKey: 'far-right' },
+    { id: "near-left",  label: "Player 1", sub: "Near Left" },
+    { id: "near-right", label: "Player 2", sub: "Near Right" },
+    { id: "far-left",   label: "Player 3", sub: "Far Left" },
+    { id: "far-right",  label: "Player 4", sub: "Far Right" },
   ];
 
-  // Read names from URL search params
   const playerNames = {
-    'near-left':  sp?.['near-left']  ? decodeURIComponent(sp['near-left'])  : null,
-    'near-right': sp?.['near-right'] ? decodeURIComponent(sp['near-right']) : null,
-    'far-left':   sp?.['far-left']   ? decodeURIComponent(sp['far-left'])   : null,
-    'far-right':  sp?.['far-right']  ? decodeURIComponent(sp['far-right'])  : null,
+    "near-left":  sp?.["near-left"]  ? decodeURIComponent(sp["near-left"])  : null,
+    "near-right": sp?.["near-right"] ? decodeURIComponent(sp["near-right"]) : null,
+    "far-left":   sp?.["far-left"]   ? decodeURIComponent(sp["far-left"])   : null,
+    "far-right":  sp?.["far-right"]  ? decodeURIComponent(sp["far-right"])  : null,
   };
 
-  function skillLevel(playerAnalysis) {
-    if (!playerAnalysis) return null;
-    const shot = playerAnalysis.shot_quality?.overall ?? 5;
-    const foot = playerAnalysis.footwork?.score ?? 5;
-    const pos = playerAnalysis.positioning?.score ?? 5;
-    const avg = (shot + foot + pos) / 3;
-    if (avg >= 8) return { label: 'Advanced', color: '#f97316', bg: '#fff7ed' };
-    if (avg >= 6) return { label: 'Intermediate', color: '#16a34a', bg: '#f0fdf4' };
-    if (avg >= 4) return { label: 'Recreational', color: '#3b82f6', bg: '#eff6ff' };
-    return { label: 'Beginner', color: '#6b7280', bg: '#f9fafb' };
+  function skillLevel(a) {
+    if (!a) return null;
+    const avg = ((a.shot_quality?.overall ?? 5) + (a.footwork?.score ?? 5) + (a.positioning?.score ?? 5)) / 3;
+    if (avg >= 8) return { label: "Advanced",      color: "#f97316", bg: "#fff7ed" };
+    if (avg >= 6) return { label: "Intermediate",  color: "#16a34a", bg: "#f0fdf4" };
+    if (avg >= 4) return { label: "Recreational",  color: "#3b82f6", bg: "#eff6ff" };
+    return            { label: "Beginner",        color: "#6b7280", bg: "#f9fafb" };
   }
 
   return (
@@ -64,13 +57,9 @@ export default async function SharePage({ params, searchParams }) {
         <div className="mx-auto max-w-2xl px-4 py-3 flex items-center justify-between">
           <span className="text-xl font-bold text-green-700">PickleballVideoIQ</span>
           {isLoggedIn ? (
-            <Link href="/" className="text-sm bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700">
-              Analyze My Game
-            </Link>
+            <Link href="/" className="text-sm bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700">Analyze My Game</Link>
           ) : (
-            <Link href={"/login?redirect=/share/" + id} className="text-sm bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700">
-              Sign Up Free
-            </Link>
+            <Link href={"/login?redirect=/share/" + id} className="text-sm bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700">Sign Up Free</Link>
           )}
         </div>
       </header>
@@ -84,48 +73,33 @@ export default async function SharePage({ params, searchParams }) {
         <div className="grid grid-cols-2 gap-4">
           {positions.map((pos) => {
             const data = playerResults[pos.id];
-            const playerAnalysis = data?.analysis;
-            const strengths = playerAnalysis?.strengths || [];
-            const weaknesses = playerAnalysis?.weaknesses || [];
+            const pa = data?.analysis;
+            const strengths = pa?.strengths || [];
+            const weaknesses = pa?.weaknesses || [];
             const tips = data?.tips || [];
-            const skill = skillLevel(playerAnalysis);
-            const customName = playerNames[pos.nameKey];
-            const displayName = customName || pos.label;
-            const skillBand = playerAnalysis?.skill_band;
-
+            const skill = skillLevel(pa);
+            const displayName = playerNames[pos.id] || pos.label;
             if (!data) return null;
-
             return (
               <div key={pos.id} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
                 <div className="mb-3">
                   <p className="text-sm font-bold text-gray-800">{displayName}</p>
                   <p className="text-xs text-gray-500">{pos.sub}</p>
-                  {skillBand && <p className="text-xs font-semibold text-green-700 mt-0.5">Rating band: {skillBand}</p>}
-                  {skill && (
-                    <span className="inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full" style={{ color: skill.color, background: skill.bg }}>
-                      {skill.label}
-                    </span>
-                  )}
+                  {pa?.skill_band && <p className="text-xs font-semibold text-green-700 mt-0.5">Band: {pa.skill_band}</p>}
+                  {skill && <span className="inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full" style={{ color: skill.color, background: skill.bg }}>{skill.label}</span>}
                 </div>
-
                 {strengths.length > 0 && (
                   <div className="mb-2">
                     <p className="text-xs font-semibold text-green-800 mb-1">Strengths</p>
-                    {strengths.slice(0,2).map((s, i) => (
-                      <p key={i} className="text-xs text-green-700">- {s}</p>
-                    ))}
+                    {strengths.slice(0,2).map((s, i) => <p key={i} className="text-xs text-green-700">- {s}</p>)}
                   </div>
                 )}
-
                 {weaknesses.length > 0 && (
                   <div className="mb-3">
                     <p className="text-xs font-semibold text-red-800 mb-1">Needs Work</p>
-                    {weaknesses.slice(0,2).map((w, i) => (
-                      <p key={i} className="text-xs text-red-700">- {w}</p>
-                    ))}
+                    {weaknesses.slice(0,2).map((w, i) => <p key={i} className="text-xs text-red-700">- {w}</p>)}
                   </div>
                 )}
-
                 {isLoggedIn ? (
                   <div className="space-y-2 mt-2">
                     <p className="text-xs font-semibold text-gray-700">Pro Tips and Drills</p>
@@ -144,9 +118,7 @@ export default async function SharePage({ params, searchParams }) {
                   <div className="rounded-xl bg-gray-100 p-3 text-center">
                     <p className="text-xs font-semibold text-gray-600 mb-1">Pro Tips and Drills</p>
                     <p className="text-xs text-gray-400 mb-2">Sign up free to unlock {tips.length} personalized drills</p>
-                    <Link href={"/login?redirect=/share/" + id} className="inline-block text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-green-700">
-                      Unlock Free
-                    </Link>
+                    <Link href={"/login?redirect=/share/" + id} className="inline-block text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-green-700">Unlock Free</Link>
                   </div>
                 )}
               </div>
@@ -158,12 +130,9 @@ export default async function SharePage({ params, searchParams }) {
           <div className="rounded-2xl bg-green-600 p-6 text-center text-white">
             <p className="text-lg font-bold mb-1">Want YOUR game analyzed?</p>
             <p className="text-sm opacity-80 mb-4">Upload a 30-second video and get AI-powered strengths, weaknesses and personalized drills.</p>
-            <Link href={"/login?redirect=/share/" + id} className="inline-block bg-white text-green-700 font-bold px-6 py-3 rounded-xl hover:bg-gray-50">
-              Sign Up Free
-            </Link>
+            <Link href={"/login?redirect=/share/" + id} className="inline-block bg-white text-green-700 font-bold px-6 py-3 rounded-xl hover:bg-gray-50">Sign Up Free</Link>
           </div>
         )}
-
         <p className="text-center text-xs text-gray-400">Analyzed by PickleballVideoIQ</p>
       </main>
     </div>

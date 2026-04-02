@@ -114,7 +114,7 @@ export default function AnalysisPage() {
           return (
             <button key={idx} onClick={() => setSelectedPlayer(idx)} style={{ top, left, transform: "translate(-50%,-50%)", position: "absolute" }} className="flex flex-col items-center gap-0.5">
               <div className={"w-10 h-10 rounded-full border-2 flex items-center justify-center text-base font-bold shadow transition-all " + (selectedPlayer === idx ? "bg-yellow-400 border-yellow-600 scale-125" : "bg-white border-gray-300 text-gray-700 hover:scale-110")}>
-                {selectedPlayer === idx ? "â˜…" : (idx + 1)}
+                {selectedPlayer === idx ? "★" : (idx + 1)}
               </div>
               <span className="text-xs text-white font-medium bg-black/40 rounded px-1">{name || "P" + (idx+1)}</span>
             </button>

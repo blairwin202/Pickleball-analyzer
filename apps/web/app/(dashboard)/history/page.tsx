@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -29,7 +29,6 @@ export default function HistoryPage() {
 
   const completed = analyses.filter((a) => a.status === "complete");
 
-  // Build progress chart data - skill band to number
   function bandToNumber(band) {
     if (!band) return null;
     const map = {
@@ -40,7 +39,6 @@ export default function HistoryPage() {
     return map[band] ?? null;
   }
 
-  // Get avg rating across all players for each session
   const chartData = completed.slice().reverse().map((a) => {
     const results = Object.values(a.player_results || {});
     const bands = results.map(r => bandToNumber(r?.analysis?.skill_band)).filter(Boolean);
@@ -51,21 +49,15 @@ export default function HistoryPage() {
     };
   }).filter(d => d.avg);
 
-  const minVal = 3.0;
-  const maxVal = 5.0;
   const chartH = 80;
   const chartW = 260;
-
   function toY(val) {
-    return chartH - ((parseFloat(val) - minVal) / (maxVal - minVal)) * chartH;
+    return chartH - ((parseFloat(val) - 3.0) / (5.0 - 3.0)) * chartH;
   }
-
   const points = chartData.map((d, i) => {
     const x = chartData.length === 1 ? chartW / 2 : (i / (chartData.length - 1)) * chartW;
-    const y = toY(d.avg);
-    return { x, y, ...d };
+    return { x, y: toY(d.avg), ...d };
   });
-
   const polyline = points.map(p => p.x + "," + p.y).join(" ");
 
   return (
@@ -89,20 +81,20 @@ export default function HistoryPage() {
         </div>
       )}
 
-      {chartData.length >= 2 && (
+      {chartData.length >= 1 && (
         <div className="rounded-2xl bg-white p-4 shadow-sm">
           <p className="text-sm font-semibold text-gray-700 mb-3">Skill Rating Progress</p>
-          <svg viewBox={"0 0 " + chartW + " " + chartH} className="w-full" style={{height: 90}}>
-            <polyline fill="none" stroke="#16a34a" strokeWidth="2.5" points={polyline} />
+          <svg viewBox={"0 0 " + chartW + " " + (chartH + 20)} className="w-full" style={{height: 110}}>
+            {chartData.length >= 2 && <polyline fill="none" stroke="#16a34a" strokeWidth="2.5" points={polyline} />}
             {points.map((p, i) => (
               <g key={i}>
-                <circle cx={p.x} cy={p.y} r="4" fill="#16a34a" />
-                <text x={p.x} y={chartH + 14} textAnchor="middle" fontSize="9" fill="#9ca3af">{p.date}</text>
-                <text x={p.x} y={p.y - 8} textAnchor="middle" fontSize="9" fill="#16a34a" fontWeight="bold">{p.avg}</text>
+                <circle cx={p.x} cy={p.y} r="5" fill="#16a34a" />
+                <text x={p.x} y={chartH + 18} textAnchor="middle" fontSize="9" fill="#9ca3af">{p.date}</text>
+                <text x={p.x} y={p.y - 9} textAnchor="middle" fontSize="9" fill="#16a34a" fontWeight="bold">{p.avg}</text>
               </g>
             ))}
           </svg>
-          <p className="text-xs text-gray-400 mt-2 text-center">Average skill band across all players per session</p>
+          <p className="text-xs text-gray-400 mt-1 text-center">Avg skill band per session</p>
         </div>
       )}
 
@@ -128,10 +120,7 @@ export default function HistoryPage() {
           const hasData = Object.keys(playerResults).length > 0;
           return (
             <div key={a.id} className="flex items-center gap-2">
-              <Link
-                href={"/analysis/" + a.id}
-                className="flex flex-1 flex-col rounded-xl bg-white px-5 py-4 shadow-sm hover:shadow-md transition-shadow"
-              >
+              <Link href={"/analysis/" + a.id} className="flex flex-1 flex-col rounded-xl bg-white px-5 py-4 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-2">
                   <div>
                     <p className="text-sm font-medium text-gray-800">
@@ -140,33 +129,26 @@ export default function HistoryPage() {
                     <p className="text-xs text-gray-400 capitalize mt-0.5">{a.status}</p>
                   </div>
                   {a.status === "complete" && (
-                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
-                      View Results
-                    </span>
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">View Results</span>
                   )}
                 </div>
                 {a.status === "complete" && hasData && (
                   <div className="grid grid-cols-4 gap-1 mt-1">
                     {positions.map((pos) => {
                       const data = playerResults[pos.id];
-                      const hasPlayerData = data && data.analysis;
+                      const ok = data && data.analysis;
                       return (
-                        <div key={pos.id} className={"rounded-lg p-1.5 text-center " + (hasPlayerData ? "bg-green-50" : "bg-gray-50")}>
+                        <div key={pos.id} className={"rounded-lg p-1.5 text-center " + (ok ? "bg-green-50" : "bg-gray-50")}>
                           <p className="text-xs text-gray-400">{pos.label}</p>
-                          <p className={"text-xs font-bold " + (hasPlayerData ? "text-green-600" : "text-gray-300")}>
-                            {hasPlayerData ? "OK" : "-"}
-                          </p>
+                          <p className={"text-xs font-bold " + (ok ? "text-green-600" : "text-gray-300")}>{ok ? "done" : "-"}</p>
                         </div>
                       );
                     })}
                   </div>
                 )}
               </Link>
-              <button
-                onClick={(e) => handleDelete(e, a.id)}
-                disabled={deleting === a.id}
-                className="rounded-xl border border-red-200 bg-red-50 px-3 py-4 text-red-500 hover:bg-red-100 transition-colors disabled:opacity-50"
-              >
+              <button onClick={(e) => handleDelete(e, a.id)} disabled={deleting === a.id}
+                className="rounded-xl border border-red-200 bg-red-50 px-3 py-4 text-red-500 hover:bg-red-100 transition-colors disabled:opacity-50">
                 {deleting === a.id ? "..." : "Delete"}
               </button>
             </div>
