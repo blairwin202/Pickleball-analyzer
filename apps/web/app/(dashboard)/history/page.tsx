@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -21,8 +21,8 @@ export default function HistoryPage() {
     if (!confirm("Delete this analysis?")) return;
     setDeleting(id);
     try {
-      await fetch("/api/analyses/" + id, { method: "DELETE" });
-      setAnalyses(prev => prev.filter((a) => a.id !== id));
+        const delRes = await fetch("/api/analyses/" + id, { method: "DELETE" });
+        if (delRes.ok) { setAnalyses(prev => prev.filter((a) => a.id !== id)); window.location.reload(); }
     } catch (err) {
       alert("Failed to delete");
     }
@@ -56,7 +56,7 @@ export default function HistoryPage() {
         {loading && <p className="text-sm text-gray-500">Loading...</p>}
         {!loading && analyses.length === 0 && (
           <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
-            <p className="text-3xl mb-2">🎾</p>
+            <p className="text-3xl mb-2">Ã°Å¸Å½Â¾</p>
             <p className="text-gray-600 font-medium">No analyses yet</p>
             <p className="text-sm text-gray-400 mt-1">Upload a video to get started</p>
             <Link href="/" className="mt-4 inline-block text-sm bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
@@ -101,7 +101,7 @@ export default function HistoryPage() {
                         <div key={pos.id} className={"rounded-lg p-1.5 text-center " + (hasPlayerData ? "bg-green-50" : "bg-gray-50")}>
                           <p className="text-xs text-gray-400">{pos.label}</p>
                           <p className={"text-xs font-bold " + (hasPlayerData ? "text-green-600" : "text-gray-300")}>
-                            {hasPlayerData ? "✓" : "-"}
+                            {hasPlayerData ? "Ã¢Å“â€œ" : "-"}
                           </p>
                         </div>
                       );
@@ -114,7 +114,7 @@ export default function HistoryPage() {
                 disabled={deleting === a.id}
                 className="rounded-xl border border-red-200 bg-red-50 px-3 py-4 text-red-500 hover:bg-red-100 transition-colors disabled:opacity-50"
               >
-                {deleting === a.id ? "..." : "🗑️"}
+                {deleting === a.id ? "..." : "Ã°Å¸â€”â€˜Ã¯Â¸Â"}
               </button>
             </div>
           );
