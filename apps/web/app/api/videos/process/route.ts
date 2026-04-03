@@ -30,17 +30,14 @@ export async function POST(request: Request) {
     .eq("id", analysisId);
 
   const processorUrl = process.env.VIDEO_PROCESSOR_URL ?? "http://localhost:8000";
+  const secret = process.env.VIDEO_PROCESSOR_SECRET ?? "";
 
-  // Return immediately to the client so mobile browser can close
-  const response = NextResponse.json({ analysisId, status: "processing" });
-
-  // Trigger Render after response is sent using waitUntil pattern
   try {
-    await fetch(${processorUrl}/process, {
+    await fetch(processorUrl + "/process", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Secret": process.env.VIDEO_PROCESSOR_SECRET ?? "",
+        "X-Secret": secret,
       },
       body: JSON.stringify({
         analysis_id: analysisId,
@@ -51,12 +48,11 @@ export async function POST(request: Request) {
     });
   } catch (err) {
     console.error("Processor trigger failed for " + analysisId + ":", err);
-    // Mark as failed so user knows to retry
     await serviceClient
       .from("analyses")
       .update({ status: "failed", error_message: "Processor unreachable - please try again" })
       .eq("id", analysisId);
   }
 
-  return response;
+  return NextResponse.json({ analysisId, status: "processing" });
 }
