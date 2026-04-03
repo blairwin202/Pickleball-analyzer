@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+﻿path = r"C:\Users\blair\Documents\pickleball-analyzer\apps\web\app\api\videos\process\route.ts"
+content = '''import { NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 export const maxDuration = 60;
@@ -60,3 +61,7 @@ export async function POST(request: Request) {
 
   return response;
 }
+'''
+with open(path, "w", encoding="utf-8") as f:
+    f.write(content)
+print("Done!")
