@@ -21,6 +21,7 @@ export function useUpload() {
       const { uploadUrl, analysisId, videoPath } = await res.json();
       await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
+        xhr.timeout = 300000;
         xhr.upload.addEventListener("progress", (e) => {
           if (e.lengthComputable) {
             setState({ phase: "uploading", progress: Math.round((e.loaded / e.total) * 100) });
@@ -31,24 +32,19 @@ export function useUpload() {
           else reject(new Error("Upload failed: " + xhr.status));
         });
         xhr.addEventListener("error", () => reject(new Error("Network error during upload")));
+        xhr.addEventListener("timeout", () => reject(new Error("Upload timed out - try a shorter video")));
         xhr.open("PUT", uploadUrl);
         xhr.setRequestHeader("Content-Type", file.type);
         xhr.send(file);
       });
-      setState({ phase: "processing", analysisId });
-      try {
-        const processRes = await fetch("/api/videos/process", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ analysisId, videoPath, playerPosition }),
-        });
-        if (!processRes.ok) {
-          console.error("Process request failed");
-        }
-      } catch (e) {
-        console.error("Process fetch error:", e);
-      }
-      setState({ phase: "done", analysisId });
+      // Trigger processing - fire and forget, do not await
+      fetch("/api/videos/process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ analysisId, videoPath, playerPosition }),
+      }).catch((e) => console.error("Process fetch error:", e));
+      // Set done immediately so mobile does not need to stay connected
+      setState({ phase: "error", analysisId });
     } catch (err) {
       setState({
         phase: "error",
