@@ -5,7 +5,7 @@ import { UploadCloud, Video, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const MAX_SIZE_MB = 200;
-const ACCEPTED = ["video/mp4", "video/quicktime", "video/x-msvideo", "video/webm"];
+const ACCEPTED = ["video/mp4", "video/webm"];
 
 interface Props {
   onFile: (file: File) => void;
@@ -17,7 +17,7 @@ export function VideoDropzone({ onFile, disabled }: Props) {
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const validate = (file: File): string | null => {
-    if (!ACCEPTED.includes(file.type)) return "Please upload a video file (MP4, MOV, AVI, or WebM).";
+    if (!ACCEPTED.includes(file.type)) return "Please upload an MP4 file. iPhone users: open your video in Photos, tap Share, then Save as MP4.";
     if (file.size > MAX_SIZE_MB * 1024 * 1024) return `File must be under ${MAX_SIZE_MB}MB.`;
     return null;
   };
