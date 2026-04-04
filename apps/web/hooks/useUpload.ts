@@ -19,40 +19,33 @@ export function useUpload() {
         throw new Error(err.error ?? "Failed to prepare upload");
       }
       const { uploadUrl, analysisId, videoPath } = await res.json();
-      console.log("Got upload URL, uploading to:", uploadUrl.substring(0, 80));
       await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.timeout = 300000;
         xhr.upload.addEventListener("progress", (e) => {
           if (e.lengthComputable) {
-            const pct = Math.round((e.loaded / e.total) * 100);
-            console.log("Upload progress:", pct + "%");
-            setState({ phase: "uploading", progress: pct });
+            setState({ phase: "uploading", progress: Math.round((e.loaded / e.total) * 100) });
           }
         });
         xhr.addEventListener("load", () => {
-          console.log("XHR load, status:", xhr.status, xhr.responseText.substring(0, 100));
           if (xhr.status >= 200 && xhr.status < 300) resolve();
-          else reject(new Error("Upload failed: " + xhr.status + " " + xhr.responseText.substring(0, 200)));
+          else reject(new Error("Upload failed: " + xhr.status));
         });
-        xhr.addEventListener("error", (e) => {
-          console.log("XHR error:", e);
-          reject(new Error("Network error during upload - check connection"));
-        });
+        xhr.addEventListener("error", () => reject(new Error("Network error during upload")));
         xhr.addEventListener("timeout", () => reject(new Error("Upload timed out - try a shorter video")));
         xhr.open("PUT", uploadUrl);
         xhr.setRequestHeader("Content-Type", file.type || "video/quicktime");
         xhr.send(file);
       });
-      console.log("Upload complete, triggering processing for:", analysisId);
+      // Fire and forget - poller will pick it up
       fetch("/api/videos/process", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ analysisId, videoPath, playerPosition }),
       }).catch((e) => console.error("Process fetch error:", e));
-      setState({ phase: "error", analysisId });
+      // Redirect to analysis page immediately
+      setState({ phase: "done", analysisId });
     } catch (err) {
-      console.error("Upload error:", err);
       setState({
         phase: "error",
         message: err instanceof Error ? err.message : "Upload failed",
