@@ -11,6 +11,8 @@ export async function POST(request: Request) {
   }
 
   const { analysisId, videoPath } = await request.json();
+  console.log("[process] Starting for analysisId:", analysisId);
+
   const serviceClient = await createServiceClient();
 
   const { data: analysis } = await serviceClient
@@ -21,6 +23,7 @@ export async function POST(request: Request) {
     .single();
 
   if (!analysis) {
+    console.log("[process] Analysis not found:", analysisId);
     return NextResponse.json({ error: "Analysis not found" }, { status: 404 });
   }
 
@@ -31,9 +34,10 @@ export async function POST(request: Request) {
 
   const processorUrl = process.env.VIDEO_PROCESSOR_URL ?? "http://localhost:8000";
   const secret = process.env.VIDEO_PROCESSOR_SECRET ?? "";
+  console.log("[process] Calling Render at:", processorUrl);
 
   try {
-    await fetch(processorUrl + "/process", {
+    const renderRes = await fetch(processorUrl + "/process", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -46,8 +50,9 @@ export async function POST(request: Request) {
       }),
       signal: AbortSignal.timeout(8000),
     });
+    console.log("[process] Render responded:", renderRes.status);
   } catch (err) {
-    console.error("Processor trigger failed for " + analysisId + ":", err);
+    console.error("[process] Render call failed:", err);
     await serviceClient
       .from("analyses")
       .update({ status: "failed", error_message: "Processor unreachable - please try again" })
