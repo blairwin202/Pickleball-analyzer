@@ -47,7 +47,8 @@ export async function POST(request: Request) {
   if (dbError || !analysis) {
     return NextResponse.json({ error: "Failed to create analysis record" }, { status: 500 });
   }
-  const videoPath = user.id + "/" + analysis.id + "/" + fileName;
+  const safeFileName = fileName.toLowerCase().replace(/[^a-z0-9._-]/g, "_");
+  const videoPath = user.id + "/" + analysis.id + "/" + safeFileName;
   await serviceClient.from("analyses").update({ video_path: videoPath }).eq("id", analysis.id);
   const { data: signedData, error: signedError } = await serviceClient.storage
     .from("videos")
