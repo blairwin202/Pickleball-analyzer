@@ -8,15 +8,28 @@ export function VideoRecorder({ onFile, disabled }) {
   const [duration, setDuration] = useState(60);
   const [timeLeft, setTimeLeft] = useState(60);
   const [error, setError] = useState(null);
+  const [stream, setStream] = useState(null);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const recorderRef = useRef(null);
   const chunksRef = useRef([]);
   const timerRef = useRef(null);
+
+  // Attach stream to video element whenever stream or mode changes
+  useEffect(() => {
+    if (!stream || !videoRef.current) return;
+    const v = videoRef.current;
+    v.srcObject = stream;
+    v.muted = true;
+    v.playsInline = true;
+    v.play().catch((e) => console.warn("play() error:", e));
+  }, [stream, mode]);
+
   const stopStream = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
+    setStream(null);
   }, []);
   const stopRecording = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -47,38 +60,24 @@ export function VideoRecorder({ onFile, disabled }) {
   const startPreview = useCallback(async () => {
     setError(null);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      const s = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false,
       });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.setAttribute("playsinline", "true");
-        videoRef.current.setAttribute("autoplay", "true");
-        videoRef.current.muted = true;
-        try {
-          await videoRef.current.play();
-        } catch (playErr) {
-          console.warn("Autoplay failed, user interaction required:", playErr);
-        }
-      }
+      streamRef.current = s;
+      setStream(s);
       setMode("preview");
     } catch (e) {
       console.error("Camera error:", e);
-      if (e.name === "NotAllowedError") {
-        setError("Camera access denied. Please allow camera access in your browser settings and try again.");
-      } else if (e.name === "NotFoundError") {
-        setError("No camera found on this device.");
-      } else if (e.name === "NotReadableError") {
-        setError("Camera is in use by another app. Close other apps and try again.");
-      } else {
-        setError("Could not access camera: " + e.message);
-      }
+      if (e.name === "NotAllowedError") setError("Camera access denied. Allow camera access in your browser settings and try again.");
+      else if (e.name === "NotFoundError") setError("No camera found on this device.");
+      else if (e.name === "NotReadableError") setError("Camera is in use by another app. Close other apps and try again.");
+      else setError("Could not access camera: " + e.message);
     }
   }, []);
   const reset = useCallback(() => { stopStream(); setMode("idle"); setError(null); }, [stopStream]);
   useEffect(() => () => stopStream(), [stopStream]);
+
   if (mode === "idle") {
     return (
       <div className="rounded-2xl bg-green-600 p-6 text-white">
