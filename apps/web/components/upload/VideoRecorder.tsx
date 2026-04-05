@@ -48,14 +48,33 @@ export function VideoRecorder({ onFile, disabled }) {
     setError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false,
       });
       streamRef.current = stream;
-      if (videoRef.current) { videoRef.current.srcObject = stream; videoRef.current.play(); }
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.setAttribute("playsinline", "true");
+        videoRef.current.setAttribute("autoplay", "true");
+        videoRef.current.muted = true;
+        try {
+          await videoRef.current.play();
+        } catch (playErr) {
+          console.warn("Autoplay failed, user interaction required:", playErr);
+        }
+      }
       setMode("preview");
     } catch (e) {
-      setError("Camera access denied. Please allow camera access and try again.");
+      console.error("Camera error:", e);
+      if (e.name === "NotAllowedError") {
+        setError("Camera access denied. Please allow camera access in your browser settings and try again.");
+      } else if (e.name === "NotFoundError") {
+        setError("No camera found on this device.");
+      } else if (e.name === "NotReadableError") {
+        setError("Camera is in use by another app. Close other apps and try again.");
+      } else {
+        setError("Could not access camera: " + e.message);
+      }
     }
   }, []);
   const reset = useCallback(() => { stopStream(); setMode("idle"); setError(null); }, [stopStream]);
@@ -98,7 +117,13 @@ export function VideoRecorder({ onFile, disabled }) {
     return (
       <div className="rounded-2xl overflow-hidden bg-black">
         <div className="relative">
-          <video ref={videoRef} muted playsInline className="w-full aspect-video object-cover bg-black" />
+          <video
+            ref={videoRef}
+            muted
+            autoPlay
+            playsInline
+            className="w-full aspect-video object-cover bg-black"
+          />
           {mode === "recording" && (
             <div className="absolute top-3 left-3 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5">
               <div className="h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse" />
@@ -110,6 +135,13 @@ export function VideoRecorder({ onFile, disabled }) {
           {mode === "recording" && (
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
               <div className="h-full bg-red-500 transition-all duration-1000" style={{ width: pct + "%" }} />
+            </div>
+          )}
+          {mode === "preview" && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="rounded-full bg-black/40 px-4 py-2">
+                <p className="text-sm text-white font-medium">Tap Start Recording when ready</p>
+              </div>
             </div>
           )}
         </div>
