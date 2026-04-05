@@ -4,15 +4,18 @@ interface Props {
   phase: "uploading" | "processing" | "done" | "error";
   progress?: number;
   message?: string;
+  isUrlMode?: boolean;
 }
 const STEPS = [
   { key: "uploading", label: "Uploading video" },
   { key: "processing", label: "Analyzing footage" },
   { key: "done", label: "Analysis complete" },
 ];
-export function UploadProgress({ phase, progress = 0, message }: Props) {
+export function UploadProgress({ phase, progress = 0, message, isUrlMode = false }: Props) {
   const currentStep = STEPS.findIndex((s) => s.key === phase);
-  const uploadLabel = "Uploading video — " + progress + "%";
+  const uploadLabel = isUrlMode
+    ? "Fetching your video..."
+    : "Uploading video -- " + progress + "%";
   return (
     <div className="flex flex-col items-center gap-6 rounded-2xl bg-white p-10 shadow-sm">
       {phase === "error" ? (
@@ -41,7 +44,7 @@ export function UploadProgress({ phase, progress = 0, message }: Props) {
                   )}
                   <span className={active || done ? "text-sm font-medium text-gray-800" : "text-sm text-gray-400"}>
                     {active && step.key === "uploading" ? uploadLabel : step.label}
-                    {active && step.key === "processing" && " (5–7 min)"}
+                    {active && step.key === "processing" && " (5-7 min)"}
                   </span>
                 </div>
               );
