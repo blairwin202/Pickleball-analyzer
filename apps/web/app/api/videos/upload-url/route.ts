@@ -33,11 +33,7 @@ export async function POST(request: Request) {
   if (fileSize > MAX_SIZE_BYTES) {
     return NextResponse.json({ error: "File too large. Maximum size is 200MB." }, { status: 400 });
   }
-  const allowedTypes = ["video/", "image/jpeg", "image/png", "application/octet-stream"];
-  const isAllowed = allowedTypes.some(t => contentType.startsWith(t)) || !contentType;
-  if (!isAllowed) {
-    return NextResponse.json({ error: "Only video files are allowed." }, { status: 400 });
-  }
+  // Accept any content type - backend will convert to mp4
   const serviceClient = await createServiceClient();
   const { data: analysis, error: dbError } = await serviceClient
     .from("analyses")
