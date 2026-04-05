@@ -20,25 +20,40 @@ POSITIONS = [
     {"id": "far-right",  "label": "Player 4 (Far Right)"},
 ]
 
-SYSTEM_A = """You are an expert pickleball coach and DUPR-certified analyst with 10+ years of experience.
-Analyze player footage objectively using the official USA Pickleball and DUPR skill band framework.
-Assess players against observable behavioral criteria for each band - not by estimating a number.
+SYSTEM_A = """You are an expert pickleball coach and DUPR-certified analyst with 10+ years of competitive and coaching experience.
+You are analyzing a SEQUENCE of frames from a pickleball match video. Look ACROSS ALL FRAMES together to assess player skill.
+Focus on MOTION INDICATORS visible across frames: paddle swing path, body rotation, follow-through, ready position between shots, split step timing, and shot selection patterns.
+DO NOT underrate players. Recreational players rarely appear in match footage - assume players are at least 3.5 unless you see clear fundamental errors.
 Skill bands: 3.0-3.3=Developing Intermediate, 3.3-3.5=Solid Intermediate, 3.5-3.7=Advanced Intermediate,
 3.7-3.9=Strong Intermediate, 3.9-4.1=Emerging Advanced, 4.1-4.3=Developing Advanced,
 4.3-4.5=Solid Advanced, 4.5-4.7=Strong Advanced, 4.7-5.0=Elite Amateur/Pro.
 Always respond with ONLY valid JSON - no markdown, no explanation outside the JSON."""
 
-PROMPT_A = """Analyze these {n} frames from a pickleball match focusing specifically on {position}.
+PROMPT_A = """You are analyzing {n} sequential frames from a pickleball match video. These frames show MOTION across time - study them together as a sequence, not as individual snapshots.
 
-Computer vision pre-analysis:
-- Frames analyzed: {frames_analyzed}
-- Court zone distribution: kitchen={kitchen:.0%}, transition={transition:.0%}, baseline={baseline:.0%}
-- Player balance score (0-1): {balance_score:.2f}
-- Knee bend average: {knee_bend:.0f} degrees
+Player to assess: {position}
 
-Focus your analysis on the player in the {position} position.
+Computer vision data:
+- Court zone time: kitchen={kitchen:.0%}, transition={transition:.0%}, baseline={baseline:.0%}
+- Balance score (0-1): {balance_score:.2f}
+- Knee bend avg: {knee_bend:.0f} degrees
 
-Use the skill band rubric below to assess which band this player belongs in based on OBSERVABLE behaviors visible in the frames.
+WHAT TO LOOK FOR ACROSS THE FRAME SEQUENCE:
+1. SERVE & RETURN: Baseline stance, trophy position, contact point, follow-through direction, depth of return
+2. DRIVES & GROUNDSTROKES: Shoulder rotation, paddle takeback, swing path, wrist snap at contact, weight transfer
+3. DINKS: Soft hands, paddle face angle, cross-court vs down-line placement, reset ability under pressure
+4. VOLLEYS: Ready position, compact swing, punch vs block, reaction time between frames
+5. COURT MOVEMENT: Split step visible between shots, lateral shuffle, recovery positioning after each shot
+6. THIRD SHOT DROP: Attempt visible? Soft arc trajectory? Landing near kitchen line?
+7. KITCHEN PLAY: Time at NVZ line, hand speed in exchanges, ERNE or ATP positioning
+
+IMPORTANT CALIBRATION:
+- Players in organized match footage are almost never below 3.3
+- Good athletic stance + kitchen presence = minimum 3.5
+- Consistent dinking + third shot attempts = 3.7+
+- Purposeful shot placement + resets under pressure = 4.0+
+- Speed-ups, ERNEs, deception = 4.3+
+- If you can see clean mechanics across multiple frames, rate accordingly - do not default low
 
 SKILL BAND RUBRIC:
 3.0-3.3 (Developing Intermediate): Basic court positioning sometimes correct; gets to kitchen line inconsistently; dink rallies 3-4 shots; serves and returns in play but lack depth; no third shot drop attempt.
