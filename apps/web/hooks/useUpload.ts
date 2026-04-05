@@ -45,7 +45,7 @@ export function useUpload() {
           xhr.addEventListener("error", () => reject(new Error("Network error during upload")));
           xhr.addEventListener("timeout", () => reject(new Error("Upload timed out - try a shorter video")));
           xhr.open("PUT", uploadUrl);
-          xhr.setRequestHeader("Content-Type", file.type || "video/quicktime");
+          xhr.setRequestHeader("Content-Type", "video/mp4");
           xhr.send(file);
         });
         fetch("/api/videos/process", {
