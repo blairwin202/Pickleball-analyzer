@@ -48,7 +48,7 @@ export async function POST(request: Request) {
   await serviceClient.from("analyses").update({ video_path: videoPath }).eq("id", analysis.id);
   const { data: signedData, error: signedError } = await serviceClient.storage
     .from("videos")
-    .createSignedUploadUrl(videoPath, { upsert: false, contentType: "video/mp4" });
+    .createSignedUploadUrl(videoPath);
   if (signedError || !signedData) {
     return NextResponse.json({ error: "Failed to create upload URL" }, { status: 500 });
   }
