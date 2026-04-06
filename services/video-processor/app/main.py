@@ -45,7 +45,6 @@ async def poll_pending_analyses():
                 aid = item["id"]
                 if aid in currently_processing:
                     continue
-                currently_processing.add(aid)
                 print(f"[poller] Triggering pipeline for {aid}", flush=True)
                 loop = asyncio.get_event_loop()
                 loop.run_in_executor(None, run_pipeline_safe, aid, item["video_path"], item["user_id"])
@@ -55,6 +54,10 @@ async def poll_pending_analyses():
 
 def run_pipeline_safe(analysis_id, video_path, user_id):
     try:
+        if analysis_id in currently_processing:
+            print(f"[poller] Skipping {analysis_id} - already processing", flush=True)
+            return
+        currently_processing.add(analysis_id)
         print(f"[poller] Running pipeline for {analysis_id}", flush=True)
         run_pipeline(analysis_id, video_path, user_id)
         print(f"[poller] Pipeline complete for {analysis_id}", flush=True)

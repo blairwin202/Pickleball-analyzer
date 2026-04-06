@@ -1,4 +1,4 @@
-﻿import asyncio
+import asyncio
 import traceback
 from fastapi import APIRouter, Header, HTTPException, BackgroundTasks
 from pydantic import BaseModel
@@ -13,6 +13,11 @@ class ProcessRequest(BaseModel):
     user_id: str
 
 def run_pipeline_safe(analysis_id: str, video_storage_path: str, user_id: str):
+    from app.main import currently_processing
+    if analysis_id in currently_processing:
+        print(f"[process] Skipping {analysis_id} - already processing", flush=True)
+        return
+    currently_processing.add(analysis_id)
     try:
         print(f"[process] Starting pipeline for {analysis_id}", flush=True)
         run_pipeline(analysis_id, video_storage_path, user_id)
@@ -20,6 +25,8 @@ def run_pipeline_safe(analysis_id: str, video_storage_path: str, user_id: str):
     except Exception as e:
         print(f"[process] FATAL ERROR for {analysis_id}: {e}", flush=True)
         print(traceback.format_exc(), flush=True)
+    finally:
+        currently_processing.discard(analysis_id)
 
 @router.post("/process")
 async def process_video(
